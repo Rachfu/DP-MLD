@@ -1,49 +1,26 @@
-# !git clone http://github.com/AccSrd/multimodal-Parkinson-data-processing.git
-
 import pandas as pd
 import numpy as np
-# from sklearn.model_selection import train_test_split
-import torch
-import torch.nn as nn
-from torch.utils.data import Dataset,DataLoader
-from torchvision.transforms import Compose,Resize,CenterCrop,Normalize,ToTensor
-import clip
-from transformers import BertTokenizer
-from tqdm import tqdm
-import pickle
+from sklearn.model_selection import train_test_split
 
 
-# data_total = []
-# for task in ["_1","_2","_3"]:
-#     task_data_tmp = pd.read_csv("python/dataset/task" + task + ".txt",header=None)
-#     data_total.append(task_data_tmp)
-# data_total = pd.concat(data_total,ignore_index=True)
+data_total = pd.DataFrame()
+for task in ["_1","_2","_3"]:
+    task_data_tmp = pd.read_csv("python/dataset/task" + task + ".txt",header=None)
+    data_total = pd.concat([data_total,task_data_tmp],axis=0)
 
-# X_data = data_total.iloc[:,2:-1].apply(lambda x:np.round(x).astype(int)).to_numpy()
-# y_data = data_total.iloc[:,-1].to_numpy()
+data = data_total.iloc[:,:-1].apply(lambda x:np.round(x).astype(int))
+label = data_total.iloc[:,-1]
 
-# X_train,X_test,y_train,y_test = train_test_split(X_data,y_data,test_size=0.2,random_state=42)
+train_data, test_data, train_label, test_label = train_test_split(data,label,test_size=0.2,random_state=42)
+train_EEG = train_data.iloc[:,:30]
+test_EEG = test_data.iloc[:,:30]
+train_act = train_data.iloc[:,30:]
+test_act = test_data.iloc[:,30:]
 
-# print(X_train)
-# train_data = pd.DataFrame({'sample':X_train.to_list(),'label':y_train})
-# train_data['sample'] = train_data['sample'].apply(lambda x: ' '.join(map(str,x)),)
-# train_data.to_csv("train.csv",index=False)
-
-# test_data = pd.DataFrame({'sample':X_test.to_list(),'label':y_test})
-# test_data['sample'] = test_data['sample'].apply(lambda x: ' '.join(map(str,x)),)
-# test_data.to_csv("test.csv",index=False)
-
-# df = pd.read_csv("python/dataset/test_EEG.csv")
-# result = []
-# for i in range(len(df)):
-#     result.append(df.iloc[i,0].split(" "))
-# result_df = pd.DataFrame(result)
-# cols = ["FP1","FP2","F3","F4","C3","C4","P3","P4","01","02"
-#         ,"F7","F8","P7","P8","Fz","Cz","Pz","FC1","FC2","CP1"
-#         ,"CP2","FC5","FC6","CP5","CP6","EMG1","EMG2","IO","EMG3","EMG4"]
-# result_df.columns = cols
-# result_df["label"] = df["label"]
-# print(result_df)
-
-# result_df.to_csv("python/dataset/test_EEG.csv")
-print("Now it is successed")
+save_path = "data/processed/"
+train_EEG.to_csv(save_path + "train_EEG.csv",index=False)
+test_EEG.to_csv(save_path + "test_EEG.csv",index=False)
+train_act.to_csv(save_path + "train_act.csv",index=False)
+test_act.to_csv(save_path + "test_act.csv",index=False)
+train_label.to_csv(save_path + "train_label.csv",index=False)
+test_label.to_csv(save_path + "test_label.csv",index=False)
